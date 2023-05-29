@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Globalization;
 
 Stopwatch sw = new Stopwatch();
 sw.Start();
@@ -7,18 +8,18 @@ static void Main()
 {
     Console.OutputEncoding = System.Text.Encoding.UTF8;
     Console.WriteLine("Введіть широту: ");
-    double lat1 = Convert.ToDouble(Console.ReadLine());
+    double lat1 = Convert.ToDouble(Console.ReadLine(), new CultureInfo("de-DE"));
     Console.WriteLine("Введіть довготу: ");
-    double lon1 = Convert.ToDouble(Console.ReadLine());
+    double lon1 = Convert.ToDouble(Console.ReadLine(), new CultureInfo("de-DE"));
     Console.WriteLine("Введіть радіус: ");
-    double radius = Convert.ToDouble(Console.ReadLine());
+    double radius = Convert.ToDouble(Console.ReadLine(), new CultureInfo("de-DE"));
 
     string[] lines = File.ReadAllLines("data.csv");
     for (int i = 0; i < lines.Length; i++)
     {
         string[] data = lines[i].Split(';');
-        double lat2 = Convert.ToDouble(data[0]);
-        double lon2 = Convert.ToDouble(data[1]);
+        double lat2 = Convert.ToDouble(data[0], new CultureInfo("de-DE"));
+        double lon2 = Convert.ToDouble(data[1], new CultureInfo("de-DE"));
         string type1 = data[2];
         string type2 = data[3];
         string name1 = data[4];
