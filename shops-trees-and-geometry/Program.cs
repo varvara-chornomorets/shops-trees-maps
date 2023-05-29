@@ -3,6 +3,7 @@
 
 static void Main()
 {
+    Console.OutputEncoding = System.Text.Encoding.UTF8;
     Console.WriteLine("Введіть широту: ");
     double lat1 = Convert.ToDouble(Console.ReadLine());
     Console.WriteLine("Введіть довготу: ");
