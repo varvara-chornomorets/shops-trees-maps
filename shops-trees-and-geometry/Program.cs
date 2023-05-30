@@ -70,6 +70,32 @@ class RTree
 
             rootNode.Insert(new Point(lat, lon, type1, type2, name1, name2));
         }
+
+        rootNode = SplitRecursively(rootNode);
+    }
+
+    private RectangularNode SplitRecursively(RectangularNode node)
+    {
+        if (node.points.Count <= 10)
+        {
+            return node;
+        }
+
+        // Поділити вузол по широті або довготі
+        if (node.maxLat - node.minLat >= node.maxLon - node.minLon)
+        {
+            (RectangularNode left, RectangularNode right) = node.SplitByLatitude();
+            node.leftChild = SplitRecursively(left);
+            node.rightChild = SplitRecursively(right);
+        }
+        else
+        {
+            (RectangularNode left, RectangularNode right) = node.SplitByLongtitude();
+            node.leftChild = SplitRecursively(left);
+            node.rightChild = SplitRecursively(right);
+        }
+
+        return node;
     }
 
     public SearchAreaPoint[] SearchPoints(double lat, double lon, double radius)
@@ -123,14 +149,14 @@ class Point
 
 class RectangularNode
 {
-    private double minLat;
-    private double maxLat;
-    private double minLon;
-    private double maxLon;
+    public double minLat;
+    public double maxLat;
+    public double minLon;
+    public double maxLon;
     private Point point;
-    private List<Point> points;
-    private RectangularNode leftChild;
-    private RectangularNode rightChild;
+    public List<Point> points;
+    public RectangularNode leftChild;
+    public RectangularNode rightChild;
 
     public RectangularNode(double minLat, double maxLat, double minLon, double maxLon)
     {
