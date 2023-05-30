@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 
-
 static void Main()
 {
     Console.OutputEncoding = System.Text.Encoding.UTF8;
@@ -28,10 +27,7 @@ static void Main()
 }
 
 Main();
-/*
-Створюємо дерево - у дереві прямокутники - у прямокутниках точки, потім ми його розбиваємо навпіл по довготі
-й широті
-*/
+
 class RTree
 {
     private RectangularNode rootNode;
@@ -39,7 +35,6 @@ class RTree
     public void BuildTree()
     {
         string[] lines = File.ReadAllLines("data.csv");
-        // Визначаємо на майбутнє щоб потім ділити навпіл
         double minLat = double.MaxValue;
         double maxLat = double.MinValue;
         double minLon = double.MaxValue;
@@ -117,7 +112,6 @@ class Point
 
         double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) + Math.Sin(dLon / 2) * Math.Sin(dLon / 2) * Math.Cos(lat1) * Math.Cos(lat2);
         double d = 2 * R * Math.Asin(Math.Sqrt(a));
-        Console.WriteLine(d);
         return d;
     }
 
@@ -135,6 +129,8 @@ class RectangularNode
     private double maxLon;
     private Point point;
     private List<Point> points;
+    private RectangularNode leftChild;
+    private RectangularNode rightChild;
 
     public RectangularNode(double minLat, double maxLat, double minLon, double maxLon)
     {
@@ -150,6 +146,60 @@ class RectangularNode
         points.Add(p);
     }
 
+    public (RectangularNode left, RectangularNode right) SplitByLatitude()
+    {
+        double medianLat = FindMedian(points, p => p.Lat);
+        var left = new RectangularNode(minLat, medianLat, minLon, maxLon);
+        var right = new RectangularNode(medianLat, maxLat, minLon, maxLon);
+
+        foreach (Point p in points)
+        {
+            if (p.Lat <= medianLat)
+                left.Insert(p);
+            else
+                right.Insert(p);
+        }
+        return (left, right);
+    }
+
+    public (RectangularNode left, RectangularNode right) SplitByLongtitude()
+    {
+        double medianLon = FindMedian(points, p => p.Lon);
+        var left = new RectangularNode(minLat, maxLat, minLon, medianLon);
+        var right = new RectangularNode(minLat, maxLat, medianLon, maxLon);
+
+        foreach (Point p in points)
+        {
+            if (p.Lon <= medianLon)
+                left.Insert(p);
+            else
+                right.Insert(p);
+        }
+        return (left, right);
+    }
+
+    private double FindMedian(List<Point> points, Func<Point, double> selector)
+    {
+        List<double> values = new List<double>();
+        foreach (Point p in points)
+        {
+            values.Add(selector(p));
+        }
+
+        values.Sort();
+        int count = values.Count;
+        if (count % 2 == 0)
+        {
+            int midIndex1 = count / 2 - 1;
+            int midIndex2 = count / 2;
+            return (values[midIndex1] + values[midIndex2]) / 2;
+        }
+        else
+        {
+            int midIndex = count / 2;
+            return values[midIndex];
+        }
+    }
 
     public SearchAreaPoint[] Search(double lat, double lon, double radius)
     {
@@ -170,7 +220,6 @@ class RectangularNode
     }
 }
 
-// Використовуємо клас щоб швидше звертатися до точок і не зберігати їх де попало
 class SearchAreaPoint
 {
     public string Type1 { get; }
