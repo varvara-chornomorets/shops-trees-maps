@@ -1,32 +1,30 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 
-static void Main()
+class Program
 {
-    Console.OutputEncoding = System.Text.Encoding.UTF8;
-    Console.WriteLine("Введіть широту: ");
-    double lat1 = Convert.ToDouble(Console.ReadLine());
-    Console.WriteLine("Введіть довготу: ");
-    double lon1 = Convert.ToDouble(Console.ReadLine());
-    Console.WriteLine("Введіть радіус: ");
-    double radius = Convert.ToDouble(Console.ReadLine());
-
-    Stopwatch sw = new Stopwatch();
-    sw.Start();
-
-    RTree tree = new RTree();
-    tree.BuildTree();
-
-    var results = tree.SearchPoints(lat1, lon1, radius);
-    foreach (var result in results)
+    static void Main()
     {
-        Console.WriteLine("{0} {1} {2} {3} Haversine: {4}", result.Type1, result.Type2, result.Name1, result.Name2, result.Distance);
+        Console.OutputEncoding = System.Text.Encoding.UTF8;
+        Console.WriteLine("Введіть широту: ");
+        double lat1 = Convert.ToDouble(Console.ReadLine());
+        Console.WriteLine("Введіть довготу: ");
+        double lon1 = Convert.ToDouble(Console.ReadLine());
+        Console.WriteLine("Введіть радіус: ");
+        double radius = Convert.ToDouble(Console.ReadLine());
+
+        Stopwatch sw = new Stopwatch();
+        sw.Start();
+
+        RTree tree = new RTree();
+        tree.BuildTree();
+
+        sw.Stop();
+        Console.WriteLine(sw.Elapsed);
     }
-
-    sw.Stop();
-    Console.WriteLine(sw.Elapsed);
 }
-
-Main();
 
 class RTree
 {
@@ -71,36 +69,7 @@ class RTree
             rootNode.Insert(new Point(lat, lon, type1, type2, name1, name2));
         }
 
-        rootNode = SplitRecursively(rootNode);
-    }
-
-    private RectangularNode SplitRecursively(RectangularNode node)
-    {
-        if (node.points.Count <= 10)
-        {
-            return node;
-        }
-
-        // Поділити вузол по широті або довготі
-        if (node.maxLat - node.minLat >= node.maxLon - node.minLon)
-        {
-            (RectangularNode left, RectangularNode right) = node.SplitByLatitude();
-            node.leftChild = SplitRecursively(left);
-            node.rightChild = SplitRecursively(right);
-        }
-        else
-        {
-            (RectangularNode left, RectangularNode right) = node.SplitByLongtitude();
-            node.leftChild = SplitRecursively(left);
-            node.rightChild = SplitRecursively(right);
-        }
-
-        return node;
-    }
-
-    public SearchAreaPoint[] SearchPoints(double lat, double lon, double radius)
-    {
-        return rootNode.Search(lat, lon, radius);
+        rootNode.SplitRecursively();
     }
 }
 
@@ -172,7 +141,32 @@ class RectangularNode
         points.Add(p);
     }
 
-    public (RectangularNode left, RectangularNode right) SplitByLatitude()
+    public void SplitRecursively()
+    {
+        if (points.Count <= 100)
+        {
+            return;
+        }
+
+        if (maxLat - minLat >= maxLon - minLon)
+        {
+            (RectangularNode left, RectangularNode right) = SplitByLatitude();
+            leftChild = left;
+            rightChild = right;
+            leftChild.SplitRecursively();
+            rightChild.SplitRecursively();
+        }
+        else
+        {
+            (RectangularNode left, RectangularNode right) = SplitByLongitude();
+            leftChild = left;
+            rightChild = right;
+            leftChild.SplitRecursively();
+            rightChild.SplitRecursively();
+        }
+    }
+
+    private (RectangularNode left, RectangularNode right) SplitByLatitude()
     {
         double medianLat = FindMedian(points, p => p.Lat);
         var left = new RectangularNode(minLat, medianLat, minLon, maxLon);
@@ -188,7 +182,7 @@ class RectangularNode
         return (left, right);
     }
 
-    public (RectangularNode left, RectangularNode right) SplitByLongtitude()
+    private (RectangularNode left, RectangularNode right) SplitByLongitude()
     {
         double medianLon = FindMedian(points, p => p.Lon);
         var left = new RectangularNode(minLat, maxLat, minLon, medianLon);
@@ -227,39 +221,24 @@ class RectangularNode
         }
     }
 
-    public SearchAreaPoint[] Search(double lat, double lon, double radius)
-    {
-        List<SearchAreaPoint> searchResults = new List<SearchAreaPoint>();
-
-        foreach (Point p in points)
-        {
-            double distance = p.Distance(lat, lon);
-
-            if (distance <= radius)
-            {
-                SearchAreaPoint searchResult = new SearchAreaPoint(p.Type1, p.Type2, p.Name1, p.Name2, distance);
-                searchResults.Add(searchResult);
-            }
-        }
-
-        return searchResults.ToArray();
-    }
 }
 
 class SearchAreaPoint
 {
+    public double Lat { get; }
+    public double Lon { get; }
     public string Type1 { get; }
     public string Type2 { get; }
     public string Name1 { get; }
     public string Name2 { get; }
-    public double Distance { get; }
 
-    public SearchAreaPoint(string type1, string type2, string name1, string name2, double distance)
+    public SearchAreaPoint(double lat, double lon, string type1, string type2, string name1, string name2)
     {
+        Lat = lat;
+        Lon = lon;
         Type1 = type1;
         Type2 = type2;
         Name1 = name1;
         Name2 = name2;
-        Distance = distance;
     }
 }
