@@ -242,6 +242,8 @@ class RectangularNode
             leftChild.SplitRecursively();
             rightChild.SplitRecursively();
         }
+
+        this.points = null;
     }
 
     private (RectangularNode left, RectangularNode right) SplitByLatitude()
