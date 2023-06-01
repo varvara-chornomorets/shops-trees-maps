@@ -17,13 +17,19 @@ class Program
         double lon1 = Convert.ToDouble(Console.ReadLine().Replace(',', '.'), CultureInfo.InvariantCulture);
         Console.WriteLine("Введіть радіус: ");
         double radius = Convert.ToDouble(Console.ReadLine().Replace(',', '.'), CultureInfo.InvariantCulture);
-
+        
         Stopwatch sw = new Stopwatch();
         sw.Start();
-
+        
         RTree tree = new RTree();
         tree.BuildTree();
-
+        Console.WriteLine(tree);
+        List<Point> result = tree.SearchPoints(lat1, lon1, radius);
+        foreach (var p in result)
+        {
+            Console.WriteLine ($"lat is {p.Lat}, lon is {p.Lon}, {p.Type1}, {p.Type2}, {p.Name1}, {p.Name2}");
+        }
+        
         sw.Stop();
         Console.WriteLine(sw.Elapsed);
     }
@@ -76,6 +82,57 @@ class RTree
 
         rootNode.SplitRecursively();
     }
+
+    public List<Point> SearchPoints(double lat, double lon, double radius)
+    {
+        // create rect node (actually square) 2r * 2r
+        RectangularNode rect = new RectangularNode(lat-radius, lat+radius, lon-radius, lon+radius);
+        List<Point> result = new List<Point>();
+        SearchInNode(rootNode, rect, result);
+        return result;
+    }
+
+    private void SearchInNode(RectangularNode cur, RectangularNode toSearch, List<Point> result)
+    {
+        // if rects don't overlap we stop
+        if (!Overlap(cur, toSearch))
+        {
+            return;
+        }
+        // if cur is a leaf we add its points to the result
+        if ((cur.rightChild == null) && (cur.leftChild == null))
+        {
+            result.AddRange(cur.points);
+            return;
+        }
+        // if it isn't a leaf (and rects overlap) we continue searching
+        SearchInNode(cur.leftChild, toSearch, result);
+        SearchInNode(cur.rightChild, toSearch, result);
+    }
+
+    private bool Overlap(RectangularNode first, RectangularNode second)
+    {
+        // let l1 be top left point of the 1 rectangular, r1 - bottom right of the 1 rect
+        // l2 left top of 2, r2 bottom right of 2
+        SimplePoint l1 = new SimplePoint(first.minLat, first.maxLon);
+        SimplePoint r1 = new SimplePoint(first.maxLat, first.minLon);
+        SimplePoint l2 = new SimplePoint(second.minLat, second.maxLon);
+        SimplePoint r2 = new SimplePoint(second.maxLat, second.minLon);
+        
+        // Two rectangles do not overlap if one of the following conditions is true. 
+        // if One rectangle is above top edge of other rectangle. 
+        if (r1.lon > l2.lon || r2.lon > l1.lon)
+        {
+            return false;
+        }
+        // if One rectangle is on left side of left edge of other rectangle.
+        if (l1.lat > r2.lat || l2.lat > r1.lat)
+        {
+            return false;
+        }
+
+        return true;
+    }
 }
 
 class Point
@@ -118,6 +175,18 @@ class Point
     private double ToRadians(double angle)
     {
         return Math.PI * angle / 180.0;
+    }
+}
+
+class SimplePoint
+{
+    public double lat;
+    public double lon;
+
+    public SimplePoint(double lat, double lon)
+    {
+        this.lat = lat;
+        this.lon = lon;
     }
 }
 
@@ -228,22 +297,24 @@ class RectangularNode
 
 }
 
-class SearchAreaPoint
-{
-    public double Lat { get; }
-    public double Lon { get; }
-    public string Type1 { get; }
-    public string Type2 { get; }
-    public string Name1 { get; }
-    public string Name2 { get; }
 
-    public SearchAreaPoint(double lat, double lon, string type1, string type2, string name1, string name2)
-    {
-        Lat = lat;
-        Lon = lon;
-        Type1 = type1;
-        Type2 = type2;
-        Name1 = name1;
-        Name2 = name2;
-    }
-}
+
+// class SearchAreaPoint
+// {
+//     public double Lat { get; }
+//     public double Lon { get; }
+//     public string Type1 { get; }
+//     public string Type2 { get; }
+//     public string Name1 { get; }
+//     public string Name2 { get; }
+//
+//     public SearchAreaPoint(double lat, double lon, string type1, string type2, string name1, string name2)
+//     {
+//         Lat = lat;
+//         Lon = lon;
+//         Type1 = type1;
+//         Type2 = type2;
+//         Name1 = name1;
+//         Name2 = name2;
+//     }
+// }
