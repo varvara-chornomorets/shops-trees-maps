@@ -27,7 +27,11 @@ class Program
         List<Point> result = tree.SearchPoints(lat1, lon1, radius);
         foreach (var p in result)
         {
-            Console.WriteLine ($"lat is {p.Lat}, lon is {p.Lon}, {p.Type1}, {p.Type2}, {p.Name1}, {p.Name2}");
+            if (p.Distance(lat1, lon1) <= radius)
+            {
+                Console.WriteLine ($"lat is {p.Lat}, lon is {p.Lon}, {p.Type1}, {p.Type2}, {p.Name1}, {p.Name2}");
+            }
+            
         }
         
         sw.Stop();
