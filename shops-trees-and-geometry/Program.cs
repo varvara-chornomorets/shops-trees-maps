@@ -1,19 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 
 class Program
 {
     static void Main()
     {
+        // this makes encoding normal for varia
         Console.OutputEncoding = System.Text.Encoding.UTF8;
         Console.WriteLine("Введіть широту: ");
-        double lat1 = Convert.ToDouble(Console.ReadLine());
+        // CultureInfo makes no difference if it's 3.5 or 3,5
+        double lat1 = Convert.ToDouble(Console.ReadLine().Replace(',', '.'), CultureInfo.InvariantCulture);
         Console.WriteLine("Введіть довготу: ");
-        double lon1 = Convert.ToDouble(Console.ReadLine());
+        double lon1 = Convert.ToDouble(Console.ReadLine().Replace(',', '.'), CultureInfo.InvariantCulture);
         Console.WriteLine("Введіть радіус: ");
-        double radius = Convert.ToDouble(Console.ReadLine());
+        double radius = Convert.ToDouble(Console.ReadLine().Replace(',', '.'), CultureInfo.InvariantCulture);
 
         Stopwatch sw = new Stopwatch();
         sw.Start();
@@ -41,8 +44,9 @@ class RTree
         foreach (string line in lines)
         {
             string[] data = line.Split(';');
-            double lat = Convert.ToDouble(data[0]);
-            double lon = Convert.ToDouble(data[1]);
+            // CultureInfo makes no difference if it's 3.5 or 3,5
+            double lat = Convert.ToDouble(data[0].Replace(',', '.'), CultureInfo.InvariantCulture);
+            double lon = Convert.ToDouble(data[1].Replace(',', '.'), CultureInfo.InvariantCulture);
 
             if (lat < minLat)
                 minLat = lat;
@@ -59,8 +63,9 @@ class RTree
         foreach (string line in lines)
         {
             string[] data = line.Split(';');
-            double lat = Convert.ToDouble(data[0]);
-            double lon = Convert.ToDouble(data[1]);
+            // CultureInfo makes no difference if it's 3.5 or 3,5
+            double lat = Convert.ToDouble(data[0].Replace(',', '.'), CultureInfo.InvariantCulture);
+            double lon = Convert.ToDouble(data[1].Replace(',', '.'), CultureInfo.InvariantCulture);
             string type1 = data[2];
             string type2 = data[3];
             string name1 = data[4];
