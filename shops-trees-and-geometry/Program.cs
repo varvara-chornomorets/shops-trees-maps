@@ -226,22 +226,22 @@ class RectangularNode
             return;
         }
 
+        RectangularNode left;
+        RectangularNode right;
         if (maxLat - minLat >= maxLon - minLon)
         {
-            (RectangularNode left, RectangularNode right) = SplitByLatitude();
-            leftChild = left;
-            rightChild = right;
-            leftChild.SplitRecursively();
-            rightChild.SplitRecursively();
+            (left, right) = SplitByLatitude();
+
         }
         else
         {
-            (RectangularNode left, RectangularNode right) = SplitByLongitude();
-            leftChild = left;
-            rightChild = right;
-            leftChild.SplitRecursively();
-            rightChild.SplitRecursively();
+            (left, right) = SplitByLongitude();
+
         }
+        leftChild = left;
+        rightChild = right;
+        leftChild.SplitRecursively();
+        rightChild.SplitRecursively();
 
         this.points = null;
     }
