@@ -1,8 +1,8 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
 
-Stopwatch sw = new Stopwatch();
-sw.Start();
+
+
 
 static void Main()
 {
@@ -13,6 +13,8 @@ static void Main()
     double lon1 = Convert.ToDouble(Console.ReadLine(), new CultureInfo("de-DE"));
     Console.WriteLine("Введіть радіус: ");
     double radius = Convert.ToDouble(Console.ReadLine(), new CultureInfo("de-DE"));
+    Stopwatch sw = new Stopwatch();
+    sw.Start();
 
     string[] lines = File.ReadAllLines("data.csv");
     for (int i = 0; i < lines.Length; i++)
@@ -31,6 +33,8 @@ static void Main()
             Console.WriteLine("{0} {1} {2} {3} Haversine: {4}", type1, type2, name1, name2, distance);
         }
     }
+    sw.Stop();
+    Console.WriteLine($"Elapsed time: {sw.Elapsed}");
 }
 
 static double HaversineDistance(double lat1, double lon1, double lat2, double lon2)
@@ -53,5 +57,3 @@ static double ToRadians(double angle)
 
 Main();
 
-sw.Stop();
-Console.WriteLine($"Elapsed time: {sw.Elapsed}");
