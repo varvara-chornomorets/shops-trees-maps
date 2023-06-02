@@ -18,20 +18,25 @@ class Program
         Console.WriteLine("Введіть радіус: ");
         double radius = Convert.ToDouble(Console.ReadLine().Replace(',', '.'), CultureInfo.InvariantCulture);
         
-        Stopwatch sw = new Stopwatch();
-        sw.Start();
+        Stopwatch swBuild = new Stopwatch();
+        Stopwatch swSearch = new Stopwatch();
         
+        swBuild.Start();
         RTree tree = new RTree();
         tree.BuildTree();
-        Console.WriteLine(tree);
+        swBuild.Stop();
+
+        
+        swSearch.Start();
         List<Point> result = tree.SearchPoints(lat1, lon1, radius);
         foreach (var p in result)
         {
             Console.WriteLine ($"lat is {p.Lat}, lon is {p.Lon}, {p.Type1}, {p.Type2}, {p.Name1}, {p.Name2}");
         }
+        swSearch.Stop();
         
-        sw.Stop();
-        Console.WriteLine(sw.Elapsed);
+        Console.WriteLine($"{swBuild.Elapsed} to build");   
+        Console.WriteLine($"{swSearch.Elapsed} to search");
     }
 }
 
