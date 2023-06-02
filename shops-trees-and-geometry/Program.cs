@@ -27,11 +27,7 @@ class Program
         List<Point> result = tree.SearchPoints(lat1, lon1, radius);
         foreach (var p in result)
         {
-            if (p.Distance(lat1, lon1) <= radius)
-            {
-                Console.WriteLine ($"lat is {p.Lat}, lon is {p.Lon}, {p.Type1}, {p.Type2}, {p.Name1}, {p.Name2}");
-            }
-            
+            Console.WriteLine ($"lat is {p.Lat}, lon is {p.Lon}, {p.Type1}, {p.Type2}, {p.Name1}, {p.Name2}");
         }
         
         sw.Stop();
@@ -92,11 +88,11 @@ class RTree
         // create rect node (actually square) 2r * 2r
         RectangularNode rect = new RectangularNode(lat-radius, lat+radius, lon-radius, lon+radius);
         List<Point> result = new List<Point>();
-        SearchInNode(rootNode, rect, result);
+        SearchInNode(rootNode, rect, result, radius, lat, lon);
         return result;
     }
 
-    private void SearchInNode(RectangularNode cur, RectangularNode toSearch, List<Point> result)
+    private void SearchInNode(RectangularNode cur, RectangularNode toSearch, List<Point> result, double radius, double x, double y)
     {
         // if rects don't overlap we stop
         if (!Overlap(cur, toSearch))
@@ -106,12 +102,18 @@ class RTree
         // if cur is a leaf we add its points to the result
         if ((cur.rightChild == null) && (cur.leftChild == null))
         {
-            result.AddRange(cur.points);
+            foreach (var p in cur.points)
+            {
+                if(p.Distance(x, y) <= radius)
+                {
+                    result.Add(p);
+                }
+            }
             return;
         }
         // if it isn't a leaf (and rects overlap) we continue searching
-        SearchInNode(cur.leftChild, toSearch, result);
-        SearchInNode(cur.rightChild, toSearch, result);
+        SearchInNode(cur.leftChild, toSearch, result, radius, x, y);
+        SearchInNode(cur.rightChild, toSearch, result, radius, x, y);
     }
 
     private bool Overlap(RectangularNode first, RectangularNode second)
